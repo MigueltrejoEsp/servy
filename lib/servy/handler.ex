@@ -12,16 +12,6 @@ defmodule Servy.Handler do
     |> format_response
   end
 
-  defp emojis(), do: Enum.random(@emoji)
-
-  def track(%{status: 404, path: path} = conv) do
-    IO.puts("Warning: #{path} is on the loose!")
-    conv
-  end
-
-  def track(conv), do: conv
-  def log(conv), do: IO.inspect(conv)
-
   def parse(request) do
     [method, path, _] =
       request
@@ -42,6 +32,8 @@ defmodule Servy.Handler do
 
   def rewrite_path(conv), do: conv
 
+  def log(conv), do: IO.inspect(conv)
+
   def route(%{method: "GET", path: "/wildthings"} = conv) do
     %{conv | status: 200, resp_body: "Bears, Lions, Tigers"}
   end
@@ -57,8 +49,6 @@ defmodule Servy.Handler do
   def route(%{method: "DELETE", path: "/bears/" <> _id} = conv) do
     %{conv | status: 403, resp_body: "Bears must never be deleted!"}
   end
-
-
 
   def route(%{method: "GET", path: "/about"} = conv) do
     File.read(("pages/about.html"))
@@ -89,6 +79,15 @@ defmodule Servy.Handler do
   end
 
   def emojify(conv), do: conv
+
+  defp emojis(), do: Enum.random(@emoji)
+
+  def track(%{status: 404, path: path} = conv) do
+    IO.puts("Warning: #{path} is on the loose!")
+    conv
+  end
+
+  def track(conv), do: conv
 
   def format_response(conv) do
     """
