@@ -53,31 +53,31 @@ defmodule Servy.Handler do
   def route(%{method: "GET", path: "/about"} = conv) do
     Path.expand("../../pages", __DIR__)
     |> Path.join("about.html")
-    |> File.read
+    |> File.read()
     |> handle_file(conv)
   end
 
   def route(%{method: "GET", path: "/bears/new"} = conv) do
     Path.expand("../../pages", __DIR__)
     |> Path.join("form.html")
-    |> File.read
+    |> File.read()
     |> handle_file(conv)
-end
+  end
 
   def route(%{path: path} = conv) do
     %{conv | status: 404, resp_body: "No #{path} here!"}
   end
 
   def handle_file({:ok, content}, conv) do
-    %{ conv | status: 200, resp_body: content }
+    %{conv | status: 200, resp_body: content}
   end
 
   def handle_file({:error, :enoent}, conv) do
-    %{ conv | status: 404, resp_body: "File not found!" }
+    %{conv | status: 404, resp_body: "File not found!"}
   end
 
   def handle_file({:error, reason}, conv) do
-    %{ conv | status: 500, resp_body: "File error: #{reason}" }
+    %{conv | status: 500, resp_body: "File error: #{reason}"}
   end
 
   def emojify(%{status: 200} = conv) do
