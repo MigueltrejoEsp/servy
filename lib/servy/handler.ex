@@ -1,6 +1,14 @@
 defmodule Servy.Handler do
+  @moduledoc """
+  Handles HTTP requests by parsing, routing, and formatting a response.
+  """
+
   @emoji ["😠", "😇", "😄", "😉"]
   @pages_path Path.expand("../../pages", __DIR__)
+
+  @doc """
+  Transforms a raw HTTP request string into a response string.
+  """
   def handle(request) do
     request
     |> parse
@@ -12,6 +20,9 @@ defmodule Servy.Handler do
     |> format_response
   end
 
+  @doc """
+  Parses the request string into a conversation map.
+  """
   def parse(request) do
     [method, path, _] =
       request
@@ -22,6 +33,9 @@ defmodule Servy.Handler do
     %{method: method, status: nil, path: path, resp_body: ""}
   end
 
+  @doc """
+  Rewrites legacy or query-style paths into canonical ones.
+  """
   def rewrite_path(%{path: "/wildlife"} = conv) do
     %{conv | path: "/wildthings"}
   end
@@ -32,8 +46,14 @@ defmodule Servy.Handler do
 
   def rewrite_path(conv), do: conv
 
+  @doc """
+  Logs the conversation and returns it unchanged.
+  """
   def log(conv), do: IO.inspect(conv)
 
+  @doc """
+  Routes the conversation based on its method and path.
+  """
   def route(%{method: "GET", path: "/wildthings"} = conv) do
     %{conv | status: 200, resp_body: "Bears, Lions, Tigers"}
   end
@@ -75,6 +95,9 @@ defmodule Servy.Handler do
     %{conv | status: 404, resp_body: "No #{path} here!"}
   end
 
+  @doc """
+  Builds the conversation response from a file read result.
+  """
   def handle_file({:ok, content}, conv) do
     %{conv | status: 200, resp_body: content}
   end
@@ -87,6 +110,9 @@ defmodule Servy.Handler do
     %{conv | status: 500, resp_body: "File error: #{reason}"}
   end
 
+  @doc """
+  Decorates a successful response body with emojis.
+  """
   def emojify(%{status: 200} = conv) do
     emojies = String.duplicate(emojis(), 5)
     body = emojies <> "\n" <> conv.resp_body <> "\n" <> emojies
@@ -98,6 +124,9 @@ defmodule Servy.Handler do
 
   defp emojis(), do: Enum.random(@emoji)
 
+  @doc """
+  Tracks unhandled requests by logging 404 paths.
+  """
   def track(%{status: 404, path: path} = conv) do
     IO.puts("Warning: #{path} is on the loose!")
     conv
@@ -105,6 +134,9 @@ defmodule Servy.Handler do
 
   def track(conv), do: conv
 
+  @doc """
+  Formats the conversation as an HTTP response string.
+  """
   def format_response(conv) do
     """
     HTTP/1.1 #{conv.status} #{status_reason(conv.status)}
