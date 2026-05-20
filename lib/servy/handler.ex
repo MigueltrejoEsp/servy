@@ -1,4 +1,7 @@
 defmodule Servy.Handler do
+  import Servy.Plugins, only: [rewrite_path: 1, log: 1, track: 1]
+  import Servy.Parse, only: [parse: 1]
+
   @moduledoc """
   Handles HTTP requests by parsing, routing, and formatting a response.
   """
@@ -19,37 +22,6 @@ defmodule Servy.Handler do
     |> track
     |> format_response
   end
-
-  @doc """
-  Parses the request string into a conversation map.
-  """
-  def parse(request) do
-    [method, path, _] =
-      request
-      |> String.split("\n")
-      |> List.first()
-      |> String.split(" ")
-
-    %{method: method, status: nil, path: path, resp_body: ""}
-  end
-
-  @doc """
-  Rewrites legacy or query-style paths into canonical ones.
-  """
-  def rewrite_path(%{path: "/wildlife"} = conv) do
-    %{conv | path: "/wildthings"}
-  end
-
-  def rewrite_path(%{path: "/bears?id=" <> id} = conv) do
-    %{conv | path: "/bears/#{id}"}
-  end
-
-  def rewrite_path(conv), do: conv
-
-  @doc """
-  Logs the conversation and returns it unchanged.
-  """
-  def log(conv), do: IO.inspect(conv)
 
   @doc """
   Routes the conversation based on its method and path.
@@ -123,16 +95,6 @@ defmodule Servy.Handler do
   def emojify(conv), do: conv
 
   defp emojis(), do: Enum.random(@emoji)
-
-  @doc """
-  Tracks unhandled requests by logging 404 paths.
-  """
-  def track(%{status: 404, path: path} = conv) do
-    IO.puts("Warning: #{path} is on the loose!")
-    conv
-  end
-
-  def track(conv), do: conv
 
   @doc """
   Formats the conversation as an HTTP response string.
