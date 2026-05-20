@@ -1,4 +1,6 @@
 defmodule Servy.Parse do
+  alias Servy.Conv
+
   @doc """
   Parses the request string into a conversation map.
   """
@@ -9,6 +11,6 @@ defmodule Servy.Parse do
       |> List.first()
       |> String.split(" ")
 
-    %{method: method, status: nil, path: path, resp_body: ""}
+    %Conv{method: method, path: path}
   end
 end
