@@ -38,11 +38,6 @@ defmodule Servy.Handler do
     BearController.index(conv)
   end
 
-  def route(%Conv{method: "GET", path: "/bears/" <> id} = conv) do
-    params = Map.put(conv.params, "id", id)
-    BearController.show(conv, params)
-  end
-
   def route(%Conv{method: "DELETE", path: "/bears/" <> _id} = conv) do
     %{conv | status: 403, resp_body: "Bears must never be deleted!"}
   end
@@ -59,6 +54,11 @@ defmodule Servy.Handler do
     |> Path.join("form.html")
     |> File.read()
     |> handle_file(conv)
+  end
+
+  def route(%Conv{method: "GET", path: "/bears/" <> id} = conv) do
+    params = Map.put(conv.params, "id", id)
+    BearController.show(conv, params)
   end
 
   def route(%Conv{method: "GET", path: "/bears/" <> file} = conv) do
