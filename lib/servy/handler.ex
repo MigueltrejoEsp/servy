@@ -49,16 +49,16 @@ defmodule Servy.Handler do
     |> handle_file(conv)
   end
 
+  def route(%Conv{method: "GET", path: "/bears/" <> id} = conv) do
+    params = Map.put(conv.params, "id", id)
+    BearController.show(conv, params)
+  end
+
   def route(%Conv{method: "GET", path: "/bears/new"} = conv) do
     @pages_path
     |> Path.join("form.html")
     |> File.read()
     |> handle_file(conv)
-  end
-
-  def route(%Conv{method: "GET", path: "/bears/" <> id} = conv) do
-    params = Map.put(conv.params, "id", id)
-    BearController.show(conv, params)
   end
 
   def route(%Conv{method: "GET", path: "/bears/" <> file} = conv) do
@@ -68,7 +68,6 @@ defmodule Servy.Handler do
     |> handle_file(conv)
   end
 
-  # name=Baloo&type=Brown
   def route(%Conv{method: "POST", path: "/bears"} = conv) do
     BearController.create(conv, conv.params)
   end

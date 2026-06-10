@@ -21,8 +21,9 @@ defmodule Servy.Wildthings do
   end
 
   def get_bear(id) when is_binary(id) do
-    id
-    |> String.to_integer()
-    |> get_bear()
+    case Integer.parse(id) do
+      {int_value, ""} -> get_bear(int_value)
+      _ -> nil
+    end
   end
 end
