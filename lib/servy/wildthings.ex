@@ -23,7 +23,6 @@ defmodule Servy.Wildthings do
   def get_bear(id) when is_binary(id) do
     case Integer.parse(id) do
       {int_value, ""} -> get_bear(int_value)
-      _ -> nil
     end
   end
 end
