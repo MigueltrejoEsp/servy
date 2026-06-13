@@ -13,7 +13,7 @@ defmodule Servy.Parser do
 
     params = parse_params(headers["Content-Type"], params_string)
 
-    if Mix.env != :test, do: IO.inspect(header_lines)
+    if Mix.env() != :test, do: IO.inspect(header_lines)
 
     [method, path, _] =
       request_line
@@ -31,6 +31,10 @@ defmodule Servy.Parser do
   end
 
   def parse_headers([], headers), do: headers
+
+  def parse_params("application/json", params_string) do
+    Poison.Parser.parse!(params_string, %{})
+  end
 
   @doc """
   Parses the given param string of the form `key1=value1&key2=value2`
