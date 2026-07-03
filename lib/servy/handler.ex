@@ -4,6 +4,7 @@ defmodule Servy.Handler do
   import Servy.FileHandler, only: [handle_file: 2]
 
   alias Servy.Conv
+  alias Servy.VideoCam
   alias Servy.BearController
 
   @moduledoc """
@@ -19,11 +20,48 @@ defmodule Servy.Handler do
     request
     |> parse
     |> rewrite_path
-    |> log
+    # |> log
     |> route
     |> track
     |> put_content_length
     |> format_response
+  end
+
+  def route(%Conv{method: "GET", path: "/snapshots"} = conv) do
+    parent = self()
+
+    spawn(fn -> send(parent, {:result, VideoCam.get_snapshot("cam-1")}) end)
+    spawn(fn -> send(parent, {:result, VideoCam.get_snapshot("cam-2")}) end)
+    spawn(fn -> send(parent, {:result, VideoCam.get_snapshot("cam-3")}) end)
+
+    snapshot1 =
+      receive do
+        {:result, filename} -> filename
+      end
+
+    snapshot2 =
+      receive do
+        {:result, filename} -> filename
+      end
+
+    snapshot3 =
+      receive do
+        {:result, filename} -> filename
+      end
+
+    snapshots = [snapshot1, snapshot2, snapshot3]
+
+    %{conv | status: 200, resp_body: inspect(snapshots)}
+  end
+
+  def route(%Conv{method: "GET", path: "/kaboom"} = conv) do
+    raise "Kaboom!"
+  end
+
+  def route(%Conv{method: "GET", path: "/hibernate/" <> time} = conv) do
+    time |> String.to_integer() |> :timer.sleep()
+
+    %{conv | status: 200, resp_body: "Awake!"}
   end
 
   @doc """
