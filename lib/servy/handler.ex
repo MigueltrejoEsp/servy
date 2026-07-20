@@ -2,6 +2,7 @@ defmodule Servy.Handler do
   import Servy.Plugins, only: [rewrite_path: 1, log: 1, track: 1]
   import Servy.Parser, only: [parse: 1]
   import Servy.FileHandler, only: [handle_file: 2]
+  import Servy.View, only: [render: 3]
 
   alias Servy.Conv
   alias Servy.VideoCam
@@ -27,34 +28,22 @@ defmodule Servy.Handler do
     |> format_response
   end
 
-  def route(%Conv{method: "GET", path: "/snapshots"} = conv) do
-    parent = self()
+  def route(%Conv{method: "GET", path: "/sensors"} = conv) do
+    task = Task.async(fn -> Servy.Tracker.get_location("bigfoot") end)
 
-    spawn(fn -> send(parent, {:result, VideoCam.get_snapshot("cam-1")}) end)
-    spawn(fn -> send(parent, {:result, VideoCam.get_snapshot("cam-2")}) end)
-    spawn(fn -> send(parent, {:result, VideoCam.get_snapshot("cam-3")}) end)
+    snapshots =
+      ["cam-1", "cam-2", "cam-3"]
+      |> Enum.map(&Task.async(fn -> VideoCam.get_snapshot(&1) end))
+      |> Enum.map(&Task.await/1)
 
-    snapshot1 =
-      receive do
-        {:result, filename} -> filename
-      end
+    where_is_bigfoot = Task.await(task)
 
-    snapshot2 =
-      receive do
-        {:result, filename} -> filename
-      end
+    render(conv, "sensors.eex", snapshots: snapshots, location: where_is_bigfoot)
 
-    snapshot3 =
-      receive do
-        {:result, filename} -> filename
-      end
-
-    snapshots = [snapshot1, snapshot2, snapshot3]
-
-    %{conv | status: 200, resp_body: inspect(snapshots)}
+    %{conv | status: 200, resp_body: inspect({snapshots, where_is_bigfoot})}
   end
 
-  def route(%Conv{method: "GET", path: "/kaboom"} = conv) do
+  def route(%Conv{method: "GET", path: "/kaboom"}) do
     raise "Kaboom!"
   end
 
