@@ -1,12 +1,17 @@
 defmodule Servy.Plugins do
   alias Servy.Conv
+  alias Servy.FourOhFourCounter
 
   @doc """
   Tracks unhandled requests by logging 404 paths.
   """
   def track(%Conv{status: 404, path: path} = conv) do
+    total = FourOhFourCounter.get_count(path)
+    IO.puts("#{path} has been requested #{total} times")
+
     if Mix.env() != :test do
       IO.puts("Warning: #{path} is on the loose!")
+      FourOhFourCounter.bump_count(path)
     end
 
     conv
