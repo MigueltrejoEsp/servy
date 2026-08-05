@@ -28,9 +28,9 @@ defmodule Servy.GenericServer do
         new_state = callback_module.handle_cast(message, state)
         listen_loop(new_state, callback_module)
 
-      unexpected ->
-        IO.puts("Unexpected message: #{inspect(unexpected)}")
-        listen_loop(state, callback_module)
+      other ->
+        new_state = callback_module.handle.info(other, state)
+        listen_loop(new_state, callback_module)
     end
   end
 end
@@ -78,6 +78,11 @@ defmodule Servy.PledgeServerHandRolled do
     most_recent_pledges = Enum.take(state, 2)
     new_state = [{name, amount} | most_recent_pledges]
     {id, new_state}
+  end
+
+  def handle_info(other, state) do
+    IO.puts("Unexpected message: #{inspect(other)}")
+    state
   end
 
   defp send_pledge_to_service(_name, _amount) do
