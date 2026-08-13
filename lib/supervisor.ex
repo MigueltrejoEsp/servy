@@ -9,7 +9,7 @@ defmodule Servy.Supervisor do
   def init(:ok) do
     children = [
       Servy.KickStarter,
-      Servy.SensorServer
+      {Servy.SensorServer, 60}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
